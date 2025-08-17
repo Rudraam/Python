@@ -1,0 +1,154 @@
+from time import strftime
+import speech_recognition as sr
+import pyttsx3
+import webbrowser
+
+import openai
+import os
+import datetime
+import random
+
+
+chatStr = ""
+
+def chat(command):
+    global chatStr
+    openai.api_key = "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"
+    chatStr += f"Rudra: {command}\nJARVIS: "
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": chatStr}
+            ],
+            temperature=0.8,
+            max_tokens=256,
+            top_p=1,
+            frequency_penalty=0.0,
+            presence_penalty=0.0
+        )
+
+        chatStr += f"{response['choices'][0]['message']['content']}\n"
+        answer = response['choices'][0]['message']['content']
+        return answer
+
+        # File writing was after return in original code; if needed, move above return
+
+    except Exception as e:
+        print(f"Error while querying AI: {e}")
+
+
+def ai(prompt):
+    openai.api_key = "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"
+
+    text = f"Openai response for Prompt: {prompt}\n*****************\n\n"
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.8,
+            max_tokens=256,
+            top_p=1,
+            frequency_penalty=0.0,
+            presence_penalty=0.0
+        )
+
+        answer = response['choices'][0]['message']['content']
+        text += answer
+
+        if not os.path.exists("Openai"):
+            os.mkdir("Openai")
+
+        safe_name = ''.join(prompt.split('intelligence')[1:]).strip()
+        filename = os.path.join("Openai", f"{safe_name}.txt")
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    except Exception as e:
+        print(f"Error while querying AI: {e}")
+
+
+
+def speak(text):
+    engine = pyttsx3.init()
+    engine.say(text)
+    engine.runAndWait()
+
+
+def take_command(offline=False):
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        r.pause_threshold = 1
+        audio = r.listen(source)
+
+    try:
+        print("Recognizing...")
+        if offline:
+            query = r.recognize_sphinx(audio)  # type: ignore
+        else:
+            query = r.recognize_google(audio, language='en-in')  # type: ignore
+
+        print(f"User said: {query}")
+        return query
+
+    except sr.UnknownValueError:
+        print("Sorry, I could not understand. Please try again.")
+        return ""
+    except sr.RequestError as e:
+        print(f"Could not request results; {e}")
+        return ""
+
+
+if __name__ == '__main__':
+    speak('Hello SIR. This is JARVIS A I')
+
+    while True:
+        command = take_command(offline=False)
+
+        if not command:
+            print("Speech Servers offline. Falling back to offline recognition...")
+            command = take_command(offline=True)
+
+        if not command:
+            continue
+
+        speak(f"You said: {command}")
+
+        sites = [["youtube", "https://www.youtube.com"], ["facebook", "https://www.facebook.com"], ["twitter", "https://www.twitter.com"],["google", "https://www.google.com"], ["wikipedia", "https://www.wikipedia.org"]]
+
+        for site in sites:
+
+            if f"open {site[0]}".lower() in command.lower():
+                webbrowser.open(site[1])
+                speak(f"Opening {site[0]} sir...")
+
+
+        if "play music" in command.lower():
+            musicPath = "D:\\Non-Critical\\songs\\Favourite_Songs2"
+            songs = os.listdir(musicPath)
+            os.startfile(os.path.join(musicPath, songs[0]))
+
+
+        if "the time" in command.lower():
+            strfTime = datetime.datetime.now().strftime("%H:%M:%S")
+            speak(f"Sir, The time is {strfTime}")
+
+        if " using artificial intelligence" in command.lower():
+            speak("Querying AI for your request sir........")
+            ai(prompt = command)
+
+        else:
+            chat(command)
+
+
+
+        if "exit" in command.lower():
+            speak("Closing the central speech servers...")
+            break
+
