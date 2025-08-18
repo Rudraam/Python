@@ -1,0 +1,60 @@
+import discord
+import openai
+from openai import OpenAI
+with open("chat.txt", "r") as f:
+    chat = f.read()
+# Initialize OpenAI client
+openai_client = OpenAI(api_key="my-openai-api-key")
+
+class MyClient(discord.Client):
+    async def on_ready(self):
+        print(f'Logged in as {self.user}!')
+
+    async def on_message(self, message):
+        global chat
+        chat += f"{message.author}: {message.content}"
+        # Prevent bot from replying to itself
+        if message.author == self.user:
+            return
+
+        print(f'Message from {message.author}: {message.content}')
+        print(message.mentions)
+
+        # Only respond if bot is mentioned
+        if self.user in message.mentions:
+            channel = message.channel
+            print(chat)
+
+            try:
+                # Create chat completion with user's message
+                response = openai_client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant."},
+                        {"role": "user", "content": f"{chat}\nRudraGPT: " }
+                    ],
+                    max_tokens=300,
+                    temperature=0.8,
+                    top_p=1,
+                    frequency_penalty=0,
+                    presence_penalty=0,
+                )
+
+                # Extract reply
+                reply = response.choices[0].message.content
+
+                # Send reply to channel
+                await channel.send(reply)
+
+            except openai.RateLimitError:
+                await channel.send(
+                    "Sorry, I can’t reply right now — quota exceeded. Please check your OpenAI account.")
+            except Exception as e:
+                await channel.send(f"An error occurred: {str(e)}")
+
+# Discord setup
+intents = discord.Intents.default()
+intents.message_content = True
+
+discord_client = MyClient(intents=intents)
+discord_client.run("my-discord-token")
