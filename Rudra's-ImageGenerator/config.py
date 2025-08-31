@@ -1,2 +1,2 @@
 
-key = "openai-api-key"
+key = "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"
