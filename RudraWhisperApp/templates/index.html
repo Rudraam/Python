@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Whisper Transcriber</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+    }
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0,0,0,0.6);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+    }
+    .navbar .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ff7eb3;
+    }
+    .navbar ul {
+      list-style: none;
+      display: flex;
+      gap: 1.5rem;
+      margin: 0;
+      padding: 0;
+    }
+    .navbar ul li a {
+      text-decoration: none;
+      color: #fff;
+      transition: color 0.3s;
+    }
+    .navbar ul li a:hover {
+      color: #ff7eb3;
+    }
+    /* Mobile Menu */
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    .menu-toggle span {
+      height: 3px;
+      width: 25px;
+      background: #fff;
+      margin: 4px 0;
+      transition: 0.4s;
+    }
+    @media (max-width: 768px) {
+      .navbar ul {
+        display: none;
+        flex-direction: column;
+        background: rgba(0,0,0,0.9);
+        position: absolute;
+        top: 60px;
+        right: 0;
+        width: 200px;
+        padding: 1rem;
+      }
+      .navbar ul.show {
+        display: flex;
+      }
+      .menu-toggle {
+        display: flex;
+      }
+    }
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+    .hero h1, .hero h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      opacity: 0.85;
+    }
+    /* Upload Card */
+    .container {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: rgba(255,255,255,0.1);
+      border-radius: 1rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      text-align: center;
+      backdrop-filter: blur(10px);
+      animation: fadeIn 1s ease-in-out;
+    }
+    .upload-box {
+      border: 2px dashed rgba(255,255,255,0.5);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      cursor: pointer;
+      transition: border 0.3s, background 0.3s;
+    }
+    .upload-box.dragover {
+      border-color: #ff7eb3;
+      background: rgba(255,255,255,0.1);
+    }
+    input[type="file"], input[type="text"] {
+      margin: 1rem 0;
+      padding: 0.8rem;
+      border-radius: 0.5rem;
+      border: none;
+      width: 90%;
+      font-size: 1rem;
+    }
+    input[type="submit"] {
+      background: #ff7eb3;
+      border: none;
+      padding: 0.9rem 2rem;
+      border-radius: 0.5rem;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    input[type="submit"]:hover {
+      background: #ff5277;
+      transform: scale(1.05);
+    }
+    .result {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: rgba(0,0,0,0.5);
+      border-radius: 0.5rem;
+      text-align: left;
+      white-space: pre-wrap;
+      font-size: 1rem;
+      line-height: 1.5;
+      display: none;
+    }
+    .actions {
+      margin-top: 1rem;
+      display: flex;
+      gap: 1rem;
+    }
+    .btn {
+      background: #667eea;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      color: #fff;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #5766d6;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Footer */
+    footer {
+      text-align:center;
+      padding:2rem 1rem;
+      margin-top:3rem;
+      background: rgba(0,0,0,0.6);
+      color:white;
+      border-top:1px solid #444;
+      font-size:0.9rem;
+    }
+    footer p {
+      margin:0.3rem 0;
+      line-height:1.5;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">🎵 Whisper Transcriber</div>
+    <ul id="menu">
+      <li><a href="#hero">Home</a></li>
+      <li><a href="#upload">Upload</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="menu-toggle" id="menu-toggle">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section id="hero" class="hero">
+    <h1>Convert Speech to Text Instantly</h1>
+    <p>Upload audio in any language — powered by OpenAI Whisper.</p>
+  </section>
+
+  <!-- Upload Form -->
+  <div class="container" id="upload">
+    <h2>Upload Audio</h2>
+    <form id="uploadForm" method="post" enctype="multipart/form-data">
+      <div class="upload-box" id="upload-box">
+        <p>Drag & drop your file here, or click to select</p>
+        <input type="file" name="file" id="fileInput" hidden required>
+      </div>
+      <input type="text" name="language" placeholder="Enter language code (e.g., en, pa, hi)">
+      <input type="submit" value="Transcribe">
+    </form>
+    <div id="result" class="result"></div>
+    <div id="actions" class="actions" style="display:none;">
+      <button class="btn" onclick="copyText()">Copy</button>
+      <button class="btn" onclick="downloadText()">Download</button>
+    </div>
+  </div>
+
+  <!-- About -->
+  <section id="about" class="hero">
+    <h2>About This App</h2>
+    <p>
+      Whisper Transcriber is a robust, AI-powered audio-to-text web application built with Flask and OpenAI's Whisper model.
+      It provides fast, accurate, and multilingual transcription for audio files, supporting languages from around the world.
+      This tool is designed for professionals, recruiters, students, and developers who need seamless speech-to-text conversion
+      with minimal effort.
+    </p>
+    <p>
+      Key Features:
+      <ul style="text-align:left; display:inline-block; margin-top:0.5rem;">
+        <li>Instant transcription of audio files in multiple languages</li>
+        <li>Clean, recruiter-ready interface with drag-and-drop uploads</li>
+        <li>Copy or download transcripts in plain text for easy sharing</li>
+        <li>Built with modern web technologies for smooth user experience</li>
+        <li>Powered by OpenAI Whisper for state-of-the-art AI transcription</li>
+      </ul>
+    </p>
+    <p>
+      This application demonstrates practical AI integration and provides a polished, professional workflow suitable for real-world use cases.
+    </p>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="hero">
+    <h2>Contact</h2>
+    <p>Interested in my work? Let’s connect on <a href="#" style="color:#ff7eb3;">LinkedIn</a>.</p>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 Rudramani Dhiman. All rights reserved.</p>
+    <p>Featured by OpenAI</p>
+    <p>
+      Whisper Transcriber is a professional-grade audio-to-text web application powered by OpenAI's Whisper model.
+      It allows users to upload audio in multiple languages and instantly receive accurate transcriptions.
+      Designed for simplicity and efficiency, this app is ideal for recruiters, students, and professionals looking
+      for seamless, AI-powered transcription in a polished, intuitive interface.
+    </p>
+  </footer>
+
+  <script>
+    // Navbar toggle
+    const toggle = document.getElementById("menu-toggle");
+    const menu = document.getElementById("menu");
+    toggle.addEventListener("click", () => menu.classList.toggle("show"));
+
+    // Upload box
+    const uploadBox = document.getElementById("upload-box");
+    const fileInput = document.getElementById("fileInput");
+    uploadBox.addEventListener("click", () => fileInput.click());
+    uploadBox.addEventListener("dragover", (e) => {
+      e.preventDefault(); uploadBox.classList.add("dragover");
+    });
+    uploadBox.addEventListener("dragleave", () => uploadBox.classList.remove("dragover"));
+    uploadBox.addEventListener("drop", (e) => {
+      e.preventDefault();
+      fileInput.files = e.dataTransfer.files;
+      uploadBox.classList.remove("dragover");
+    });
+
+    // Form submission
+    const form = document.getElementById("uploadForm");
+    const resultDiv = document.getElementById("result");
+    const actions = document.getElementById("actions");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      resultDiv.style.display = "block";
+      resultDiv.textContent = "⏳ Transcribing...";
+      actions.style.display = "none";
+
+      try {
+        const response = await fetch("/", { method: "POST", body: formData });
+        const data = await response.json();
+        resultDiv.textContent = data.text;
+        actions.style.display = "flex";
+      } catch (err) {
+        resultDiv.textContent = "❌ Error: " + err.message;
+      }
+    });
+
+    // Copy transcript
+    function copyText() {
+      navigator.clipboard.writeText(resultDiv.textContent);
+      alert("Copied to clipboard!");
+    }
+    // Download transcript
+    function downloadText() {
+      const blob = new Blob([resultDiv.textContent], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "transcript.txt";
+      link.click();
+    }
+  </script>
+</body>
+</html>
